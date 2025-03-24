@@ -12,10 +12,7 @@
 #include <stdexcept>
 #include <sstream>
 #include <string>
-
-
-
-
+#include <iostream>
 
 // TODO write a default constructor that sets the member variables to today's
 // date. 
@@ -33,6 +30,11 @@ bool isValidDate(int year, int month, int day) {
     return day <= daysInMonth[month - 1];
 }
 
+void throwDateError() {
+    std::cerr << "Error: invalid date argument(s)." << std::endl;
+    throw std::invalid_argument("Invalid date format");   
+}
+
 Date::Date() {
     std::time_t t = std::time(nullptr);
     std::tm* now = std::localtime(&t);
@@ -48,7 +50,7 @@ Date::Date() {
 //  Date d = Date("2024-12-25");
 Date::Date(int y, int m, int d) {
     if (!isValidDate(y, m, d)) {
-        throw std::invalid_argument("Invalid date");
+        throwDateError();
     }
     year = y;
     month = m;
@@ -66,12 +68,8 @@ Date::Date(const std::string& dateString) {
     char dash1, dash2;
     int y, m, d;
     
-    if (!(ss >> y >> dash1 >> m >> dash2 >> d) || dash1 != '-' || dash2 != '-') {
-        throw std::invalid_argument("Invalid date format");
-    }
-    
-    if (!isValidDate(y, m, d)) {
-        throw std::invalid_argument("Invalid date");
+    if (!(ss >> y >> dash1 >> m >> dash2 >> d) || dash1 != '-' || dash2 != '-' || !isValidDate(y, m, d)) {
+        throwDateError();
     }
     
     year = y;

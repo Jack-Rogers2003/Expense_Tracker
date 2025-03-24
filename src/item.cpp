@@ -92,7 +92,8 @@ bool Item::deleteTag(const std::string& tag) {
             return true;
         }
     }
-    throw std::out_of_range("Tag not found for deletion: " + tag);
+    std::cerr << "Error: invalid tag argument(s)." << std::endl;
+    throw std::out_of_range("");
 }
 
 // TODO Write a function, numTags, that takes no parameters and returns an

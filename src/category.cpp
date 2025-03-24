@@ -85,7 +85,8 @@ Item Category::newItem(const std::string id, const std::string description, doub
         items.push_back(Item{id, description, price, date});
 
     } catch(const std::runtime_error& e) {
-        throw std::runtime_error("Error adding item");
+        std::cerr << "Error: invalid item argument(s)." << std::endl;
+        throw std::out_of_range("Error: invalid item argument(s).");
     }
     return Item(id, description, price, date);
 
@@ -139,7 +140,8 @@ Item& Category::getItem(std::string id) {
             return item;  // Return the found category
         }
     }    
-    throw std::out_of_range("Item not found"); 
+    std::cerr << "Error: invalid item argument(s)." << std::endl;
+    throw std::out_of_range("Error: invalid item argument(s).");
 }
 
 // TODO Write a function, getSum, that returns the sum of all Item amounts in
@@ -176,7 +178,8 @@ bool Category::deleteItem(const std::string& id) {
             return true;
         }
     }
-    throw std::out_of_range("No item"); 
+    std::cerr << "Error: invalid item argument(s)." << std::endl;
+    throw std::out_of_range("Error: invalid item argument(s).");
 }
 
 // TODO Write an == operator overload for the Category class, such that two

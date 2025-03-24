@@ -116,8 +116,9 @@ Category& ExpenseTracker::getCategory(const std::string& id) {
         if (category.getIdent() == id) {
             return category;  
         }
-    }    
-    throw std::out_of_range("Category with identifier " + id + " not found");
+    }
+    std::cerr << "Error: invalid category argument(s)." << std::endl;
+    throw std::out_of_range("Error: invalid category argument(s).");    
 }
 
 // TODO Write a function, deleteCategory, that takes one parameter, a Category
@@ -137,7 +138,8 @@ bool ExpenseTracker::deleteCategory(const std::string& id) {
             return true;
         }
     }
-    throw std::runtime_error("Failed to delete category.");
+    std::cerr << "Error: invalid category argument(s)." << std::endl;
+    throw std::out_of_range("Error: invalid category argument(s).");
 }
 
 // TODO Write a function, getSum, that returns the sum of all Category expense
