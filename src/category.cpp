@@ -13,6 +13,7 @@
 #include "lib_json.hpp" 
 #include <iostream>
 #include <list>
+#include <string>
 
 
 // TODO Write a constructor that takes one parameter, a string identifier and
@@ -140,7 +141,6 @@ Item& Category::getItem(std::string id) {
             return item;  // Return the found category
         }
     }    
-    std::cerr << "Error: invalid item argument(s)." << std::endl;
     throw std::out_of_range("Error: invalid item argument(s).");
 }
 
@@ -195,13 +195,15 @@ bool Category::deleteItem(const std::string& id) {
 //  }
 
 bool Category::operator==(const Category& category) const {
-    return id == category.getIdent() && items == category.getItems();
+    //Same logic as was mentioned in the item operator==, as lists aren't equivalient
+    //with the same lists of different orders, the lists are copied and then sort to prevent#
+    //false negatives
+    std::list<Item> copy1 = items;
+    std::list<Item> copy2 = category.getItems();
+    copy1.sort();
+    copy2.sort();
+    return id == category.getIdent() && copy1 == copy2;
 }
-
-std::list<Item> Category::getItems() const {
-    return items;
-}
-
 
 
 // TODO Write a function, str, that takes no parameters and returns a
@@ -226,6 +228,29 @@ std::string Category::str() const {
 
 }
 
+/*
+Iterates through the list of items and returns true if the item id passed through exists within the set, or false if it does not
+*/
+bool Category::checkItemExists(std::string itemId) {
+    for (const auto& item : items) {
+        if(item.getIdent() == itemId) {
+            return true;
+        }
+    }
+    return false;
+}
+
+/*
+Compares the item parameter to the current category object based on their ID, included to allow the
+ .sort() to check through the items when called
+*/
 bool Category::operator<(const Category& other) const {
-    return id < other.id;  // Compare based on the identifier or any other criteria
+    return id < other.getIdent();  
+}
+
+/*
+Returns the list of items within the Category
+*/
+std::list<Item> Category::getItems() const {
+    return items;
 }

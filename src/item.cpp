@@ -92,8 +92,7 @@ bool Item::deleteTag(const std::string& tag) {
             return true;
         }
     }
-    std::cerr << "Error: invalid tag argument(s)." << std::endl;
-    throw std::out_of_range("");
+    throw std::out_of_range("Error: invalid tag argument(s).");
 }
 
 // TODO Write a function, numTags, that takes no parameters and returns an
@@ -151,10 +150,6 @@ void Item::setDate(const Date& newDate) {
     date = newDate;
 }
 
-std::list<std::string> Item::getTags() const {
-    return tags;
-}
-
 // TODO Write an == operator overload for the Item class, such that two
 // Item objects are equal only if they have the same identifier, date,
 // amount, description, and tags.
@@ -166,11 +161,20 @@ std::list<std::string> Item::getTags() const {
 //  }
 
 bool Item::operator==(const Item& other) const {
+    //as list equivalence returns false is the list has the same data but is a different order, we copy
+    //the lists and use .sort to prevent any false negatives
+    std::list<std::string> copy1 = getTags();
+    std::list<std::string> copy2 = other.getTags();
+
+    copy1.sort();
+    copy2.sort();
+
+    return copy1 == copy2;
     return id == other.id &&
            description == other.description &&
            amount == other.amount &&
            date == other.date &&
-           tags == other.tags;  
+           copy1 == copy2;  
 }
 
 // TODO Write a function, str, that takes no parameters and returns a
@@ -193,6 +197,15 @@ std::string Item::str() const {
     return j.dump();
 }
 
+/*
+Compares the item parameter to the current item object based on their ID, included to allow the
+ .sort() to check through the items when called
+*/
 bool Item::operator<(const Item& other) const {
     return id < other.getIdent();  
+}
+
+//Returns the lists of tags attached to the item
+std::list<std::string> Item::getTags() const {
+    return tags;
 }

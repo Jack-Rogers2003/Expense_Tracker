@@ -60,65 +60,71 @@ int App::run(int argc, char *argv[]) {
   etObj.load(db);
   etObj.getCategories();
 
-  Action a = parseActionArgument(args);
+  Action a;
+  try {
+    a = parseActionArgument(args);
+  } catch(const std::exception& e) {
+    std::cerr << "Error: invalid action argument(s)." << std::endl;
+    return 1;      
+  }
 
   //Get arguments from what was inputted, setting a default value if they don't exist
   std::string category = args.count("category") ? args["category"].as<std::string>() : "";
-
   std::string item = args.count("item") ? args["item"].as<std::string>() : "";
-  double amount = args.count("amount") ? std::stod(args["amount"].as<std::string>()) : 1.0;
+  double amount = 1.0;
+  //check that amount has been passed as a double to prevent crash
+  try {
+    args.count("amount") ? std::stod(args["amount"].as<std::string>()) : 1.0;
+  } catch (const std::exception&) {
+    std::cerr << "Error: invalid double argument(s)." << std::endl;
+    return 1;
+}
   std::string description = args.count("description") ? args["description"].as<std::string>() : "";
   std::string date = args.count("date") ? args["date"].as<std::string>() : "";
   std::string tag = args.count("tag") ? args["tag"].as<std::string>() : "";
 
 
   switch (a) {
-
-    case Action::CREATE:
     //args.count is used to check existing rather than default value as possible default value is the intended input
+    case Action::CREATE:
     if (args.count("category")) {
-      //creaying category
+      //creating category
       if (!args.count("item") && !args.count("amount") && !args.count("description") && !args.count("date")) {
         etObj.addCategory(Category(category));
       } else if(args.count("item")) {
         try {
           etObj.getCategory(category);
         } catch(const std::exception& e) {
+          std::cerr << "Error: invalid category argument(s)." << std::endl;
           return 1;
         }
         //creating new item
-        if(args.count("amount") && args.count("description")) {
-          Date date = Date();
+        if(args.count("amount") && args.count("description") && !etObj.getCategory(category).checkItemExists(item)) {
+          Date dateToAdd = Date();
           if (args.count("date")) {
             try {
-              date = Date(date);
+              dateToAdd = Date(date);
             } catch(const std::exception& e) {
-              return 1;              }
-          }
-
-          etObj.getCategory(category).newItem(item, description, amount, date);
-          if (args.count("tag")) {
-            std::stringstream ss(tag);
-            std::vector<std::string> result;
-            std::string tag;
-            while (std::getline(ss, tag, ',')) {
-              etObj.getCategory(category).getItem(item).addTag(tag);
+              std::cerr << "Error: invalid date argument(s)." << std::endl;
+              return 1;              
             }
           }
-          //Not creating a new time but creating a new tag for an existing item
+
+          etObj.getCategory(category).newItem(item, description, amount, dateToAdd);
+          //create tags with an item if provided
+          if (args.count("tag")) {
+            addTags(etObj, item, category, tag);
+          }
+          //Not creating a new item but creating a new tag for an existing item
         } else {
           try {
             etObj.getCategory(category).getItem(item);
           } catch(const std::exception& e) {
+            std::cerr << "Error: invalid item argument(s)." << std::endl;
             return 1;  
           }
           if (args.count("tag")) {
-            std::stringstream ss(tag);
-            std::vector<std::string> result;
-            std::string tag;
-            while (std::getline(ss, tag, ',')) {
-              etObj.getCategory(category).getItem(item).addTag(tag);
-            }
+            addTags(etObj, item, category, tag);
           }
         }
       }
@@ -130,6 +136,7 @@ int App::run(int argc, char *argv[]) {
 
     case Action::JSON:
       if (!args.count("category") && !args.count("item")) {
+        //output contents of whole expensetracker
         std::cout << getJSON(etObj) << std::endl;
         break;
 
@@ -137,17 +144,21 @@ int App::run(int argc, char *argv[]) {
         try {
           etObj.getCategory(category);
         } catch(const std::exception& e) {
+          std::cerr << "Error: invalid category argument(s)." << std::endl;
           return 1;       
         }
         if (!args.count("item")) {
+          //output contents of provided category
           std::cout << getJSON(etObj, category) << std::endl;
           break;
         } else {
           try {
             etObj.getCategory(category).getItem(item);
           } catch(const std::exception& e) {
+            std::cerr << "Error: invalid item argument(s)." << std::endl;
             return 1;  
           }
+          //output contents of provided item within a category
           std::cout << getJSON(etObj, category, item) << std::endl;
           break;   
         }
@@ -162,8 +173,11 @@ int App::run(int argc, char *argv[]) {
       try {
         etObj.getCategory(category);
       } catch(const std::exception& e) {
+        std::cerr << "Error: invalid category argument(s)." << std::endl;
         return 1;       
       }
+      //update category id, splits by semicolon as specified in specification, the 
+      //first element is the identifer, second element what to replace it with
       if (!args.count("item") && !args.count("amount")) {
         std::stringstream ss(category);
         std::vector<std::string> result;
@@ -176,8 +190,10 @@ int App::run(int argc, char *argv[]) {
         try {
           etObj.getCategory(category).getItem(item);
         } catch(const std::exception& e) {
+          std::cerr << "Error: invalid item argument(s)." << std::endl;
           return 1;       
         }
+        //updates item by passed elements
         if(args.count("amount")) {
           etObj.getCategory(category).getItem(item).setAmount(amount);
         } if (args.count("description")) {
@@ -186,6 +202,7 @@ int App::run(int argc, char *argv[]) {
           try {
             etObj.getCategory(category).getItem(item).setDate(Date(date));
           } catch(const std::exception& e) {
+            std::cerr << "Error: invalid date argument(s)." << std::endl;
             return 1;       
           }
         }
@@ -201,22 +218,28 @@ int App::run(int argc, char *argv[]) {
       try {
         etObj.getCategory(category);
       } catch(const std::exception& e) {
+        std::cerr << "Error: invalid category argument(s)." << std::endl;
         return 1;       
       }
       if (!args.count("item")) {
+        //deletes category
         etObj.deleteCategory(category);
       } else {
         try {
           etObj.getCategory(category).getItem(item);
         } catch(const std::exception& e) {
+          std::cerr << "Error: invalid item argument(s)." << std::endl;
           return 1;       
         }
         if (!args.count("tag")) {
+          //deletes item
           etObj.getCategory(category).deleteItem(item);
         } else {
           try {
+            //deletes tag from item
             etObj.getCategory(category).getItem(item).deleteTag(tag);
           } catch(const std::exception& e) {
+            std::cerr << "Error: invalid tag argument(s)." << std::endl;
             return 1;    
           }
         }
@@ -232,10 +255,13 @@ int App::run(int argc, char *argv[]) {
         try {
           etObj.getCategory(category);
         } catch(const std::exception& e) {
+          std::cerr << "Error: invalid category argument(s)." << std::endl;
           return 1;       
         }
+        //sums category
         std::cout << etObj.getCategory(category).getSum() << std::endl;
       } else {
+        //sums expensetracker
         std::cout << etObj.getSum() << std::endl;
       }
     break;
@@ -244,9 +270,19 @@ int App::run(int argc, char *argv[]) {
     std::cerr << "Error: invalid action argument(s)." << std::endl;
     return 1;       
   }
+  //If a request reaches this point we know it was valid so save to the db
   etObj.save(db);
   return 0;
 } 
+
+//Adds tags to an item within a specific catgeory
+void App::addTags(ExpenseTracker& etObj, std::string item, std::string category, std::string tag) {
+  std::stringstream ss(tag);
+  std::string tagToAdd;
+  while (std::getline(ss, tagToAdd, ',')) {
+    etObj.getCategory(category).getItem(item).addTag(tagToAdd);
+  }
+}
 
 // Create a cxxopts instance. You do not need to modify this function.
 //
@@ -327,18 +363,16 @@ cxxopts::Options App::cxxoptsSetup() {
 //  App::Action action = parseActionArgument(args);
 App::Action App::parseActionArgument(cxxopts::ParseResult &args) {
   std::string input = args["action"].as<std::string>();
-
-  std::transform(input.begin(), input.end(), input.begin(), ::tolower);
   if (input == "create") {
-      return Action::CREATE;
+    return Action::CREATE;
   } else if (input == "json") {
-      return Action::JSON;
+    return Action::JSON;
   } else if (input == "update") {
-      return Action::UPDATE;
+    return Action::UPDATE;
   } else if (input == "delete") {
-      return Action::DELETE;
+    return Action::DELETE;
   } else if (input == "sum") {
-      return Action::SUM;
+    return Action::SUM;
   } else {
     throw std::invalid_argument("action"); 
   }

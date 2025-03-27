@@ -35,6 +35,7 @@ public:
     std::list<Item> getItems() const;
     std::string str() const;
     void merge(const Category& other);
+    bool checkItemExists(std::string itemId);
     bool operator<(const Category& other) const;
 };
 

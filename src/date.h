@@ -36,6 +36,7 @@ public:
     bool operator<(const Date& other) const;
 
     std::string toString() const;
+    bool isValidDate(int year, int month, int day) const;
 };
 
 #endif // DATE_H

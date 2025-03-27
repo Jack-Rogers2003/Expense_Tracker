@@ -51,6 +51,7 @@ App::Action parseActionArgument(cxxopts::ParseResult &args);
 std::string getJSON(ExpenseTracker &et);
 std::string getJSON(ExpenseTracker &et, const std::string &c);
 std::string getJSON(ExpenseTracker &et, const std::string &c, const std::string &id);
+void addTags(ExpenseTracker& etObj, std::string item, std::string category, std::string tag);
 } // namespace App
 
 #endif // _371EXPENSES_H

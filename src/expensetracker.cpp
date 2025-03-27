@@ -117,7 +117,6 @@ Category& ExpenseTracker::getCategory(const std::string& id) {
             return category;  
         }
     }
-    std::cerr << "Error: invalid category argument(s)." << std::endl;
     throw std::out_of_range("Error: invalid category argument(s).");    
 }
 
@@ -331,9 +330,17 @@ void ExpenseTracker::save(const std::string& filename) const {
 //  }
 
 bool ExpenseTracker::operator==(const ExpenseTracker& other) const {
-    return categories == other.getCategories(); 
+    std::list<Category> copy1 = getCategories();
+    std::list<Category> copy2 = other.getCategories();
+
+    copy1.sort();
+    copy2.sort();
+    return copy1 == copy2; 
 }
 
+/*
+Return the expensetracker's set of categories 
+*/
 std::list<Category> ExpenseTracker::getCategories() const {
     return categories;
 }
