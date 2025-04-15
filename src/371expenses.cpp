@@ -1,11 +1,4 @@
-// -----------------------------------------------------
-// CSC371 Advanced Object Oriented Programming (2024/25)
-// Department of Computer Science, Swansea University
-//
-// Author: 2210081
-//
-// Canvas: https://canvas.swansea.ac.uk/courses/52781
-// -----------------------------------------------------
+
 
 #include "371expenses.h"
 #include "lib_cxxopts.hpp"
@@ -17,24 +10,7 @@
 
 
 
-// TODO Complete this function. You have been provided some skeleton code which
-//  retrieves the database file name from cxxopts.
-//  1. Load the database file by calling load() on a ExpenseTracker object
-//  2. Parse the 'action' argument to decide what action should be taken
-//     (json, create, sum, delete, update).  'json' and 'sum' are the easiest to implement and
-//     'update' is the hardest. The details of how these arguments work is in
-//     the coursework specification.
-//  3. Save the updated ExpenseTracker object to the JSON file if there have been
-//     changes (calling save() on the ExpenseTracker object).
-//
-// Some commented out code has been provided. Using some of this will be
-// demonstrated in the coursework video on Canvas. Remember, this coursework is
-// meant to be challenging and testing your understanding of programming in C++.
-// Part of the challenge is figuring things out on your own. That is a major
-// part of software development.
-//
-// Example:
-//  int main(int argc, char *argv[]) { return App::run(argc, argv); }
+
 int App::run(int argc, char *argv[]) {
   auto options = App::cxxoptsSetup();
   auto args = options.parse(argc, argv);
@@ -74,9 +50,9 @@ int App::run(int argc, char *argv[]) {
   double amount = 1.0;
   //check that amount has been passed as a double to prevent crash
   try {
-    args.count("amount") ? std::stod(args["amount"].as<std::string>()) : 1.0;
+    amount = args.count("amount") ? std::stod(args["amount"].as<std::string>()) : 1.0;
   } catch (const std::exception&) {
-    std::cerr << "Error: invalid double argument(s)." << std::endl;
+    std::cerr << "Error: invalid amount argument(s)." << std::endl;
     return 1;
 }
   std::string description = args.count("description") ? args["description"].as<std::string>() : "";
@@ -378,55 +354,18 @@ App::Action App::parseActionArgument(cxxopts::ParseResult &args) {
   }
 }
 
-// TODO Write a function, getJSON, that returns a std::string containing the
-// JSON representation of a ExpenseTracker object.
-//
-// This function has been implemented for you, but you may wish to adjust it.
-// You will have to uncomment the code, which has been left commented to ensure
-// the coursework framework compiles (i.e., it calls functions that you must
-// implement, once you have implemented them you may uncomment this function).
-//
-// Example:
-//  ExpenseTracker etObj{};
-//  std::cout << getJSON(etObj);
 std::string App::getJSON(ExpenseTracker &etObj) {
   // Only uncomment this once you have implemented the functions used!
   return etObj.str();
 }
 
-// TODO Write a function, getJSON, that returns a std::string containing the
-//  JSON representation of a specific Category in a ExpenseTracker object.
-//
-// This function has been implemented for you, but you may wish to adjust it.
-// You will have to uncomment the code, which has been left commented to ensure
-// the coursework framework compiles (i.e., it calls functions that you must
-// implement, once you have implemented them you may uncomment this function and
-// make any other adjustments).
-//
-// Example:
-//  ExpenseTracker etObj{};
-//  std::string c = "category argument value";
-//  std::cout << getJSON(etObj, c);
 std::string App::getJSON(ExpenseTracker &etObj, const std::string &c) {
   // Only uncomment this once you have implemented the functions used!
   auto cObj = etObj.getCategory(c);
   return cObj.str();
 }
 
-// TODO Write a function, getJSON, that returns a std::string containing the
-//  JSON representation of a specific ExpenseItem in a ExpenseTracker object.
-//
-// This function has been implemented for you, but you may wish to adjust it.
-// You will have to uncomment the code, which has been left commented to ensure
-// the coursework framework compiles (i.e., it calls functions that you must
-// implement, once you have implemented them you may uncomment this function and
-// make any other adjustments).
-//
-// Example:
-//  ExpenseTracker etObj{};
-//  std::string c = "category argument value";
-//  std::string id = "expense id argument value";
-//  std::cout << getJSON(etObj, c, id);
+
 std::string App::getJSON(ExpenseTracker &etObj, 
                          const std::string &c,
                          const std::string &id) {
