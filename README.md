@@ -1,4 +1,3 @@
-By Jack Rogers, 2210081
 
 All features have been implemented, matching the specification requirements for each action and their effects on expenses, categories, and items. No additional features have been implemented beyond the initial spec, and testing has been done to ensure possible exceptions are caught and dealt with as much as possible with appropriate error messages matching the format of the specification.
 
